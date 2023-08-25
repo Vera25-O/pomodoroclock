@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 const Timer = ({ interval, onIntervalComplete }) => {
-  const [timeLeft, setTimeLeft] = useState(interval);
-  const [isActive, setIsActive] = useState(false);
+  // Retrieve the stored timer state from localStorage, or use initial state
+  const storedState = JSON.parse(localStorage.getItem('timerState'));
+  const initialState = storedState || {
+    isRunning: false,
+    timeLeft: interval,
+  };
+
+  const [timeLeft, setTimeLeft] = useState(initialState.timeLeft);
+  const [isActive, setIsActive] = useState(initialState.isRunning);
 
   useEffect(() => {
     let timer;
@@ -16,7 +23,12 @@ const Timer = ({ interval, onIntervalComplete }) => {
       onIntervalComplete();
     }
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+
+      // Save the timer state to localStorage when the component unmounts
+      localStorage.setItem('timerState', JSON.stringify({ isRunning: isActive, timeLeft }));
+    };
   }, [isActive, timeLeft, onIntervalComplete]);
 
   const toggleTimer = () => {
